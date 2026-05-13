@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="💊吃药提醒">
+<meta name="theme-color" content="#667eea">
+<meta name="mobile-web-app-capable" content="yes">
+<title>💊 吃药提醒</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #667eea;
+  --primary-dark: #5a6fd6;
+  --bg-start: #667eea;
+  --bg-end: #764ba2;
+  --card-bg: rgba(255,255,255,.95);
+  --success: #27ae60;
+  --warning: #e67e22;
+  --danger: #e74c3c;
+  --text: #333;
+  --text-light: #888;
+}
+html, body {
+  height: 100%; overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  background: linear-gradient(160deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  color: var(--text);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.container {
+  max-width: 460px; margin: 0 auto;
+  min-height: 100vh; padding: 0 16px 24px;
+  display: flex; flex-direction: column;
+}
+
+/* 头部 */
+.header {
+  text-align: center; padding: 28px 0 16px;
+}
+.header h1 {
+  font-size: 26px; color: white; font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,.2);
+  letter-spacing: 1px;
+}
+.header .subtitle {
+  font-size: 13px; color: rgba(255,255,255,.75); margin-top: 4px;
+}
+
+/* 主状态卡片 */
+.main-card {
+  background: var(--card-bg); border-radius: 24px; padding: 20px;
+  margin-bottom: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.18);
+  text-align: center; position: relative; overflow: hidden;
+}
+.main-card::before {
+  content:''; position:absolute; top:-40%; right:-30%; width:160px; height:160px;
+  border-radius:50%; background:rgba(102,126,234,.08);
+}
+.clock-date { font-size: 13px; color: var(--text-light); }
+.clock-time {
+  font-size: 48px; font-weight: 800; letter-spacing: 2px;
+  color: var(--text); line-height: 1.15; margin: 6px 0;
+  font-variant-numeric: tabular-nums;
+}
+.status-badge {
+  display:inline-block; padding: 6px 18px; border-radius: 20px;
+  font-size: 15px; font-weight: 600;
+}
+.status-badge.morning { background:#fff3e0; color:#e65100; }
+.status-badge.daytime { background:#e8f5e9; color:#2e7d32; }
+.status-badge.evening { background:#ede7f6; color:#512da8; }
+
+/* 倒计时 */
+.countdown-card {
+  background: var(--card-bg); border-radius: 20px; padding: 16px;
+  margin-bottom: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.12);
+  display:flex; align-items:center; justify-content:center; gap:16px;
+}
+.countdown-label { font-size:13px; color:var(--text-light); white-space:nowrap; }
+.countdown-num {
+  font-size:32px; font-weight:800; color:var(--primary);
+  font-variant-numeric: tabular-nums; letter-spacing:1px;
+}
+
+/* 药品卡片 */
+.med-section {
+  background: var(--card-bg); border-radius: 20px; padding: 16px;
+  margin-bottom: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.12);
+}
+.section-header {
+  display:flex; align-items:center; gap:8px; margin-bottom:12px;
+  padding-bottom:10px; border-bottom:2px solid #f5f5f5;
+}
+.section-header .emoji { font-size:24px; }
+.section-header .title { font-size:16px; font-weight:700; flex:1; }
+.section-header .time-hint { font-size:12px; color:var(--text-light); background:#f5f5f5; padding:3px 10px; border-radius:10px; }
+
+.med-row {
+  display:flex; align-items:center; padding:10px 4px;
+  border-bottom:1px solid #f8f8f8;
+}
+.med-row:last-child { border:none; }
+.med-left { flex:1; }
+.med-name { font-size:16px; font-weight:600; }
+.med-dose { font-size:13px; color:var(--text-light); margin-top:2px; }
+.med-note { font-size:11px; color:#bbb; margin-top:3px; line-height:1.4; }
+
+/* 打卡按钮 */
+.check-btn {
+  width:48px; height:48px; border-radius:50%; border:none;
+  font-size:24px; cursor:pointer; transition:all .25s cubic-bezier(.4,2,.2,1);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; position:relative;
+}
+.check-btn.off { background:#f0f0f0; color:#ccc; }
+.check-btn.on { background:var(--success); color:white; transform:scale(1.08); box-shadow:0 4px 16px rgba(39,174,96,.35); }
+.check-btn:active { transform: scale(0.92); }
+
+/* 进度 */
+.progress-wrap { margin-top:auto; padding-top:12px; }
+.progress-info { display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,.8); margin-bottom:6px; }
+.progress-track {
+  height:8px; background:rgba(255,255,255,.25); border-radius:4px; overflow:hidden;
+}
+.progress-bar {
+  height:100%; border-radius:4px; transition:width .5s ease;
+  background:linear-gradient(90deg,#a8edea,#fed6e3);
+}
+
+/* 完成庆祝 */
+.celebrate-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center; z-index:100;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.celebrate-overlay.show { opacity:1; pointer-events:auto; }
+.celebrate-card {
+  background:white; border-radius:24px; padding:36px 40px; text-align:center;
+  transform:scale(.8); transition:transform .35s cubic-bezier(.175,.885,.32,1.275);
+}
+.celebrate-overlay.show .celebrate-card { transform:scale(1); }
+.celebrate-emoji { font-size:56px; margin-bottom:12px; }
+.celebrate-text { font-size:20px; font-weight:700; color:var(--text); }
+.celebrate-sub { font-size:14px; color:var(--text-light); margin-top:6px; }
+
+/* Toast */
+.toast {
+  position:fixed; top:60px; left:50%; transform:translateX(-50%) translateY(-20px);
+  background:rgba(0,0,0,.78); color:white; padding:12px 28px;
+  border-radius:14px; font-size:15px; z-index:200;
+  opacity:0; transition:all .3s ease; white-space:nowrap;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* 安装提示 */
+.install-banner {
+  background:rgba(255,255,255,.95); border-radius:16px; padding:14px 16px;
+  margin-bottom:14px; display:flex; align-items:center; gap:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+}
+.install-banner .ib-icon { font-size:32px; }
+.install-banner .ib-text { flex:1; }
+.install-banner .ib-title { font-size:14px; font-weight:600; }
+.install-banner .ib-desc { font-size:11px; color:var(--text-light); margin-top:2px; }
+.install-banner .ib-btn {
+  background:var(--primary); color:white; border:none; padding:8px 18px;
+  border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;
+  white-space:nowrap;
+}
+
+/* 底部安全区 */
+.safe-bottom { height:env(safe-area-inset-bottom); }
+
+@media (max-width:380px) {
+  .clock-time { font-size:40px; }
+  .countdown-num { font-size:26px; }
+  .header h1 { font-size:22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>💊 吃药提醒</h1>
+    <div class="subtitle">按时服药 · 健康每一天</div>
+  </div>
+
+  <!-- 安装提示 -->
+  <div class="install-banner" id="installBanner" style="display:none;">
+    <span class="ib-icon">📲</span>
+    <div class="ib-text">
+      <div class="ib-title">添加到主屏幕</div>
+      <div class="ib-desc">像 App 一样使用，无需打开浏览器</div>
+    </div>
+    <button class="ib-btn" id="installBtn">安装</button>
+  </div>
+
+  <!-- 主状态 -->
+  <div class="main-card">
+    <div class="clock-date" id="dateLabel"></div>
+    <div class="clock-time" id="clockTime"></div>
+    <div class="status-badge" id="statusBadge"></div>
+  </div>
+
+  <!-- 倒计时 -->
+  <div class="countdown-card">
+    <span class="countdown-label">⏰ 下次提醒</span>
+    <span class="countdown-num" id="countdownNum">--:--:--</span>
+  </div>
+
+  <!-- 🌅 早上药 -->
+  <div class="med-section">
+    <div class="section-header">
+      <span class="emoji">🌅</span>
+      <span class="title">早上服药</span>
+      <span class="time-hint">9:00 前</span>
+    </div>
+    <div class="med-row">
+      <div class="med-left">
+        <div class="med-name">艾司西酞普兰</div>
+        <div class="med-dose">10 mg · 每日一次</div>
+      </div>
+      <button class="check-btn off" id="btn_m_esc" onclick="doCheck('m','escitalopram')">○</button>
+    </div>
+  </div>
+
+  <!-- 🌙 晚上药 -->
+  <div class="med-section">
+    <div class="section-header">
+      <span class="emoji">🌙</span>
+      <span class="title">晚上服药</span>
+      <span class="time-hint">22:00 前</span>
+    </div>
+    <div class="med-row">
+      <div class="med-left">
+        <div class="med-name">奥氮平</div>
+        <div class="med-dose">2.5 mg 起（每3天+2.5mg → 最高10mg）</div>
+        <div class="med-note">💡 当前剂量可点击下方记录</div>
+      </div>
+      <button class="check-btn off" id="btn_e_ola" onclick="doCheck('e','olanzapine')">○</button>
+    </div>
+    <div class="med-row">
+      <div class="med-left">
+        <div class="med-name">米氮平</div>
+        <div class="med-dose">15 mg（1周后可加到30mg）</div>
+      </div>
+      <button class="check-btn off" id="btn_e_mir" onclick="doCheck('e','mirtazapine')">○</button>
+    </div>
+  </div>
+
+  <!-- 进度 -->
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span>今日进度</span>
+      <span id="progressText">0 / 3</span>
+    </div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- 庆祝弹窗 -->
+<div class="celebrate-overlay" id="celebrateOverlay" onclick="this.classList.remove('show')">
+  <div class="celebrate-card">
+    <div class="celebrate-emoji" id="celeEmoji">🎉</div>
+    <div class="celebrate-text" id="celeText">太棒了！</div>
+    <div class="celebrate-sub" id="celeSub">今天的药都吃完了~</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 数据 ==========
+const SKEY = 'med_v2';
+function load() { try { return JSON.parse(localStorage.getItem(SKEY)) || {}; } catch(e){ return {}; } }
+function save(d) { localStorage.setItem(SKEY, JSON.stringify(d)); }
+function today() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function key(g,id){ return g+'_'+id; }
+function isOn(g,id){
+  const d=load(); const t=today(); return !!(d[t]&&d[t][key(g,id)]);
+}
+function flip(g,id){
+  const d=load(); const t=today();
+  if(!d[t]) d[t]={};
+  d[t][key(g,id)] = !(d[t][key(g,id)]);
+  save(d);
+  return d[t][key(g,id)];
+}
+
+// 所有按钮ID映射
+const ALL_BTNS = [
+  ['m','escitalopram','btn_m_esc'],
+  ['e','olanzapine','btn_e_ola'],
+  ['e','mirtazapine','btn_e_mir']
+];
+
+// ========== UI 更新 ==========
+function refreshBtn(g,id,btnId){
+  const btn=document.getElementById(btnId);
+  if(isOn(g,id)){
+    btn.className='check-btn on'; btn.textContent='✓';
+  } else {
+    btn.className='check-btn off'; btn.textContent='○';
+  }
+}
+function refreshAll(){
+  ALL_BTNS.forEach(([g,id,bid])=>refreshBtn(g,id,bid));
+  updateProgress();
+}
+
+// ========== 打卡 ==========
+function doCheck(g,id){
+  const on=flip(g,id);
+  const bid = ALL_BTNS.find(x=>x[0]===g&&x[1]===id)[2];
+  refreshBtn(g,id,bid);
+  updateProgress();
+
+  if(on && navigator.vibrate) navigator.vibrate([40,20,40]);
+  showToast(on ? '✅ 已记录' : '↩️ 已取消');
+  checkCelebrate();
+}
+
+// ========== 进度 ==========
+function updateProgress(){
+  let n=0;
+  ALL_BTNS.forEach(([g,id])=>{ if(isOn(g,id)) n++; });
+  document.getElementById('progressBar').style.width=(n/ALL_BTNS.length*100)+'%';
+  document.getElementById('progressText').textContent=n+' / '+ALL_BTNS.length;
+}
+
+// ========== 时钟 & 状态 ==========
+const WEEKDAYS=['周日','周一','周二','周三','周四','周五','周六'];
+function tick(){
+  const now=new Date();
+  const h=now.getHours(), m=now.getMinutes(), s=now.getSeconds();
+
+  // 日期
+  document.getElementById('dateLabel').textContent =
+    now.getMonth()+1+'月'+now.getDate()+'日 '+WEEKDAYS[now.getDay()];
+
+  // 时间
+  document.getElementById('clockTime').textContent =
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+
+  // 状态徽章
+  const total=h*60+m;
+  const badge=document.getElementById('statusBadge');
+  if(total<9*60){
+    badge.textContent='🌅 早上吃药时间'; badge.className='status-badge morning';
+  } else if(total<22*60){
+    badge.textContent='☀️ 白天时段'; badge.className='status-badge daytime';
+  } else {
+    badge.textContent='🌙 晚上吃药时间'; badge.className='status-badge evening';
+  }
+
+  // 倒计时
+  countdown(h,m,s);
+}
+
+function countdown(h,m,s){
+  let target, label;
+  const total=h*60+m;
+  if(total<9*60){ target=9; label='早'; }
+  else if(total<22*60){ target=22; label='晚'; }
+  else { target=33; label='明早'; }
+
+  let diff=target*60-total;
+  if(diff<=0) diff+=24*60;
+
+  const hh=Math.floor(diff/60), mm=diff%60, ss=(59-s)%60;
+  document.getElementById('countdownNum').textContent=
+    String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+}
+
+// ========== 庆祝 ==========
+function checkCelebrate(){
+  const allDone=ALL_BTNS.every(([g,id])=>isOn(g,id));
+  if(!allDone) return;
+  const now=new Date(), total=now.getHours()*60+now.getMinutes();
+  const morningDone=isOn('m','escitalopram');
+  const eveningDone=isOn('e','olanzapine')&&isOn('e','mirtazapine');
+
+  if(total>=9*60&&total<22*60&&morningDone&&!isEveningTime()){
+    showCelebrate('🌅','早上药吃完啦！','下午继续加油~');
+  } else if(isEveningTime()&&eveningDone){
+    showCelebrate('🎉','今天全部完成！','好好休息，晚安💤');
+  }
+}
+function isEveningTime(){ return new Date().getHours()*60+new Date().getMinutes()>=22*60; }
+function showCelebrate(emoji,text,sub){
+  document.getElementById('celeEmoji').textContent=emoji;
+  document.getElementById('celeText').textContent=text;
+  document.getElementById('celeSub').textContent=sub;
+  document.getElementById('celebrateOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('celebrateOverlay').classList.remove('show'),3000);
+}
+
+// ========== Toast ==========
+let toastTimer=null;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
+}
+
+// ========== 通知 ==========
+function setupNotif(){
+  if(!('Notification'in window)) return;
+  if(Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+  if(Notification.permission!=='granted') return;
+
+  function fire(title,body){
+    const n=new Notification(title,{body,icon:'icon-192.png',badge:'icon-192.png',
+      vibrate:[200,100,200],tag:'med'});
+    setTimeout(()=>n.close(),8000);
+  }
+
+  // 计算下次提醒时间
+  const now=new Date(), h=now.getHours(), m=now.getMinutes();
+  function sched(targetH, title, body){
+    let t=new Date(); t.setHours(targetH,0,0,0);
+    if(t<=now) t.setDate(t.getDate()+1);
+    setTimeout(()=>fire(title,body),t-now);
+  }
+  sched(9,'💊 该吃早上的药了！','艾司西酞普兰 10mg');
+  sched(22,'💊 该吃晚上的药了！','奥氮平 + 米氮平');
+}
+
+// ========== PWA 安装 ==========
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById('installBanner').style.display='flex';
+});
+document.getElementById('installBtn').addEventListener('click',async()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const r=await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  document.getElementById('installBanner').style.display='none';
+  if(r.outcome==='accepted') showToast('🎉 已添加到主屏幕！');
+});
+
+// ========== Service Worker 注册 ==========
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ========== 启动 ==========
+refreshAll();
+tick();
+setInterval(tick,1000);
+setupNotif();
+
+// 首次访问提示
+if(!localStorage.getItem('_med_visited')){
+  setTimeout(()=>{
+    showToast('👆 点击上方「安装」按钮添加到桌面');
+    localStorage.setItem('_med_visited','1');
+  },1500);
+}
+</script>
+</body>
+</html>
