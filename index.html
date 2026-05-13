@@ -192,12 +192,12 @@ html, body {
     <div class="subtitle">按时服药 · 健康每一天</div>
   </div>
 
-  <!-- 安装提示 -->
-  <div class="install-banner" id="installBanner" style="display:none;">
+  <!-- 安装提示（始终显示） -->
+  <div class="install-banner" id="installBanner">
     <span class="ib-icon">📲</span>
     <div class="ib-text">
-      <div class="ib-title">添加到主屏幕</div>
-      <div class="ib-desc">像 App 一样使用，无需打开浏览器</div>
+      <div class="ib-title">添加到主屏幕（像App一样用）</div>
+      <div class="ib-desc" id="installDesc">正在检测安装方式...</div>
     </div>
     <button class="ib-btn" id="installBtn">安装</button>
   </div>
@@ -446,16 +446,37 @@ let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',(e)=>{
   e.preventDefault();
   deferredPrompt=e;
-  document.getElementById('installBanner').style.display='flex';
+  document.getElementById('installDesc').textContent = '点击右侧「安装」按钮即可';
+  document.getElementById('installBtn').style.display='';
 });
 document.getElementById('installBtn').addEventListener('click',async()=>{
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const r=await deferredPrompt.userChoice;
-  deferredPrompt=null;
-  document.getElementById('installBanner').style.display='none';
-  if(r.outcome==='accepted') showToast('🎉 已添加到主屏幕！');
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    const r=await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    document.getElementById('installBanner').style.display='none';
+    if(r.outcome==='accepted') showToast('🎉 已添加到主屏幕！');
+    return;
+  }
+  // 不支持 beforeinstallprompt 时显示手动指引
+  showInstallGuide();
 });
+
+function showInstallGuide(){
+  const ua = navigator.userAgent.toLowerCase();
+  let guide = '';
+  if(ua.includes('oppo') || ua.includes('heytap')){
+    guide = '①点浏览器底部菜单(三横线)→②找"添加到桌面/主屏幕"→③如找不到请用Chrome浏览器打开本页';
+  } else if(ua.includes('chrome')){
+    guide = '①点右上角三点菜单⋮→②选"添加到主屏幕"→③确认';
+  } else if(ua.includes('safari')){
+    guide = '①点底部分享按钮📤→②选"添加到主屏幕"→③确认';
+  } else {
+    guide = '①点浏览器菜单→②找"添加到桌面"或"安装应用"→③推荐用Chrome打开更方便';
+  }
+  document.getElementById('installDesc').textContent = guide;
+  showToast('👇 看下方操作步骤');
+}
 
 // ========== Service Worker 注册 ==========
 if('serviceWorker'in navigator){
@@ -468,13 +489,19 @@ tick();
 setInterval(tick,1000);
 setupNotif();
 
-// 首次访问提示
+// 首次访问提示 + 安装引导
 if(!localStorage.getItem('_med_visited')){
   setTimeout(()=>{
-    showToast('👆 点击上方「安装」按钮添加到桌面');
+    showToast('👆 点击「安装」按钮添加到桌面');
     localStorage.setItem('_med_visited','1');
   },1500);
 }
+// 页面加载后检测安装方式
+setTimeout(()=>{
+  if(!deferredPrompt){
+    showInstallGuide();
+  }
+},2000);
 </script>
 </body>
 </html>
