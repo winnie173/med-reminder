@@ -7,421 +7,251 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="💊吃药提醒">
 <meta name="theme-color" content="#667eea">
-<meta name="mobile-web-app-capable" content="yes">
 <title>💊 吃药提醒</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-:root {
-  --primary: #667eea;
-  --primary-dark: #5a6fd6;
-  --bg-start: #667eea;
-  --bg-end: #764ba2;
-  --card-bg: rgba(255,255,255,.95);
-  --success: #27ae60;
-  --warning: #e67e22;
-  --danger: #e74c3c;
-  --text: #333;
-  --text-light: #888;
-}
-html, body {
-  height: 100%; overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-  background: linear-gradient(160deg, var(--bg-start) 0%, var(--bg-end) 100%);
-  color: var(--text);
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:linear-gradient(160deg,#667eea,#764ba2);color:#333;padding:10px;min-height:100vh}
+.wrap{max-width:440px;margin:0 auto}
 
-.container {
-  max-width: 460px; margin: 0 auto;
-  min-height: 100vh; padding: 0 16px 24px;
-  display: flex; flex-direction: column;
-}
+/* 标题 */
+.title{color:#fff;text-align:center;font-size:22px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.2);padding:16px 0 10px}
 
-/* 头部 */
-.header {
-  text-align: center; padding: 20px 0 12px;
-}
-.header h1 {
-  font-size: 24px; color: white; font-weight: 700;
-  text-shadow: 0 2px 8px rgba(0,0,0,.2);
-}
+/* TAB */
+.tabs{display:flex;background:rgba(255,255,255,.2);border-radius:12px;padding:3px;margin-bottom:12px}
+.tab{flex:1;border:none;background:none;color:rgba(255,255,255,.85);font-size:14px;font-weight:600;padding:9px 0;border-radius:10px;cursor:pointer}
+.tab.on{background:#fff;color:#667eea;box-shadow:0 2px 6px rgba(0,0,0,.1)}
 
-/* Tab 切换 */
-.tab-bar {
-  display:flex; background:rgba(255,255,255,.18); border-radius:14px;
-  padding:3px; margin-bottom:14px;
-}
-.tab-btn {
-  flex:1; border:none; background:transparent; color:rgba(255,255,255,.8);
-  font-size:14px; font-weight:600; padding:10px 0; border-radius:11px;
-  cursor:pointer; transition:all .25s; position:relative;
-}
-.tab-btn.active { background:white; color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,.12); }
+/* 页面 */
+.pane{display:none}
+.pane.show{display:block}
 
-/* 页面区域 */
-.page { display:none; }
-.page.active { display:block; animation: fadeIn .3s ease; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+/* 卡片 */
+.card{background:rgba(255,255,255,.95);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
 
-/* ===== 今日页 ===== */
-
-/* 主状态卡片 */
-.main-card {
-  background: var(--card-bg); border-radius: 20px; padding: 16px;
-  margin-bottom: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
-  text-align: center; position: relative; overflow: hidden;
-}
-.main-card::before {
-  content:''; position:absolute; top:-40%; right:-30%; width:140px; height:140px;
-  border-radius:50%; background:rgba(102,126,234,.08);
-}
-.clock-date { font-size: 13px; color: var(--text-light); }
-.clock-time {
-  font-size: 42px; font-weight: 800; letter-spacing: 2px;
-  color: var(--text); line-height: 1.15; margin: 4px 0;
-  font-variant-numeric: tabular-nums;
-}
-.status-badge {
-  display:inline-block; padding: 5px 14px; border-radius: 16px;
-  font-size: 13px; font-weight: 600;
-}
-.status-badge.morning { background:#fff3e0; color:#e65100; }
-.status-badge.daytime { background:#e8f5e9; color:#2e7d32; }
-.status-badge.evening { background:#ede7f6; color:#512da8; }
+/* 时钟 */
+.clock-c{text-align:center}
+.clock-d{font-size:12px;color:#888}
+.clock-t{font-size:40px;font-weight:800;color:#333;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:5px 14px;border-radius:14px;font-size:13px;font-weight:600;margin-top:4px}
+.badge.am{background:#fff3e0;color:#e65100}
+.badge.day{background:#e8f5e9;color:#2e7d32}
+.badge.pm{background:#ede7f6;color:#512da8}
 
 /* 倒计时 */
-.countdown-card {
-  background: var(--card-bg); border-radius: 16px; padding: 14px;
-  margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
-  display:flex; align-items:center; justify-content:center; gap:12px;
-}
-.countdown-label { font-size:12px; color:var(--text-light); white-space:nowrap; }
-.countdown-num {
-  font-size:28px; font-weight:800; color:var(--primary);
-  font-variant-numeric: tabular-nums; letter-spacing:1px;
-}
+.cd-row{display:flex;align-items:center;justify-content:center;gap:12px}
+.cd-lbl{font-size:12px;color:#888}
+.cd-num{font-size:26px;font-weight:800;color:#667eea;letter-spacing:1px}
 
-/* 药品卡片 */
-.med-section {
-  background: var(--card-bg); border-radius: 16px; padding: 14px;
-  margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
-}
-.section-header {
-  display:flex; align-items:center; gap:8px; margin-bottom:10px;
-  padding-bottom:8px; border-bottom:2px solid #f5f5f5;
-}
-.section-header .emoji { font-size:20px; }
-.section-header .title { font-size:15px; font-weight:700; flex:1; }
-.section-header .time-hint { font-size:11px; color:var(--text-light); background:#f5f5f5; padding:2px 8px; border-radius:8px; }
+/* 药品区 */
+.sec-title{display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #f0f0f0}
+.sec-title .emo{font-size:18px}
+.sec-title .name{font-size:14px;font-weight:700;flex:1}
+.sec-title .hint{font-size:11px;color:#888;background:#f5f5f5;padding:2px 8px;border-radius:8px}
 
-.med-row {
-  display:flex; align-items:center; padding:8px 4px;
-  border-bottom:1px solid #f8f8f8;
-}
-.med-row:last-child { border:none; }
-.med-left { flex:1; }
-.med-name { font-size:15px; font-weight:600; }
-.med-dose { font-size:12px; color:var(--text-light); margin-top:2px; }
-.med-note { font-size:11px; color:#bbb; margin-top:2px; line-height:1.4; }
+.med-item{display:flex;align-items:center;padding:8px 2px;border-bottom:1px solid #fafafa}
+.med-item:last-child{border:none}
+.med-info{flex:1}
+.med-n{font-size:15px;font-weight:600}
+.med-d{font-size:12px;color:#888;margin-top:1px}
 
-/* 打卡按钮 */
-.check-btn {
-  width:44px; height:44px; border-radius:50%; border:none;
-  font-size:22px; cursor:pointer; transition:all .25s cubic-bezier(.4,2,.2,1);
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0;
-}
-.check-btn.off { background:#f0f0f0; color:#ccc; }
-.check-btn.on { background:var(--success); color:white; transform:scale(1.06); box-shadow:0 3px 12px rgba(39,174,96,.35); }
-.check-btn.late { background:var(--warning); color:white; }
-.check-btn:active { transform: scale(0.9); }
+/* 按钮 */
+.btn{width:42px;height:42px;border-radius:50%;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.btn-no{background:#f0f0f0;color:#ccc}
+.btn-yes{background:#27ae60;color:#fff;transform:scale(1.06);box-shadow:0 3px 10px rgba(39,174,96,.3)}
+.btn-late{background:#e67e22;color:#fff}
+.btn:active{transform:scale(.88)}
 
-/* 进度 */
-.progress-wrap { margin-top:auto; padding-top:10px; }
-.progress-info { display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,.85); margin-bottom:6px; }
-.progress-track {
-  height:8px; background:rgba(255,255,255,.25); border-radius:4px; overflow:hidden;
-}
-.progress-bar {
-  height:100%; border-radius:4px; transition:width .5s ease;
-  background:linear-gradient(90deg,#a8edea,#fed6e3);
-}
+/* 进度条 */
+.prog{margin-top:8px}
+.prog-info{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.85);margin-bottom:4px}
+.prog-bar{height:7px;background:rgba(255,255,255,.25);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#a8edea,#fed6e3);transition:width .4s}
 
 /* ===== 日历页 ===== */
-.cal-card {
-  background:var(--card-bg); border-radius:20px; padding:16px;
-  margin-bottom:14px; box-shadow:0 6px 24px rgba(0,0,0,.12);
-}
-.cal-nav {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:14px;
-}
-.cal-nav button {
-  width:36px; height:36px; border-radius:50%; border:none; background:#f5f5f5;
-  font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition:background .2s;
-}
-.cal-nav button:active { background:#e0e0e0; }
-.cal-month-label { font-size:17px; font-weight:700; color:var(--text); }
 
-.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; }
-.cal-head { font-size:11px; color:var(--text-light); padding:6px 0; font-weight:600; }
-.cal-head.weekend { color:var(--danger); }
-.cal-day {
-  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
-  border-radius:50%; font-size:14px; font-weight:500; cursor:pointer;
-  position:relative; transition:all .2s; user-select:none;
-}
-.cal-day.other-month { color:#ccc; }
-.cal-day.today { font-weight:800; color:var(--primary); }
-.cal-day.selected { background:var(--primary); color:white; }
-.cal-day:hover:not(.other-month):not(.selected) { background:#f0f0f0; }
-/* 日历上的圆点标记 */
-.cal-day .dots {
-  position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
-  display:flex; gap:2px;
-}
-.cal-day .dot {
-  width:5px; height:5px; border-radius:50%;
-}
-.dot.full { background:var(--success); }
-.dot.partial { background:var(--warning); }
-.dot.none { background:#ddd; }
+/* 统计 */
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.st{flex:1;background:rgba(255,255,255,.95);border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.st-n{font-size:22px;font-weight:800;color:#667eea}
+.st-l{font-size:10px;color:#888;margin-top:2px}
 
-/* 选中日期详情 */
-.date-detail {
-  background:var(--card-bg); border-radius:16px; padding:14px;
-  margin-bottom:14px; box-shadow:0 4px 20px rgba(0,0,0,.1);
-}
-.detail-header {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:12px;
-}
-.detail-title { font-size:15px; font-weight:700; }
-.detail-status { font-size:12px; padding:3px 10px; border-radius:10px; font-weight:600; }
-.detail-status.done { background:#e8f5e9; color:#2e7d32; }
-.detail-status.partial { background:#fff3e0; color:#e65100; }
-.detail-status.missed { background:#fce4ec; color:#c62828; }
-.detail-status.empty { background:#f5f5f5; color:#999; }
+/* 日历 */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav button{width:34px;height:34px;border-radius:50%;border:none;background:#f0f0f0;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-nav button:active{background:#ddd}
+.cal-title{font-size:16px;font-weight:700;color:#333}
 
-.detail-med-row {
-  display:flex; align-items:center; padding:8px 4px;
-  border-bottom:1px solid #f8f8f8;
-}
-.detail-med-row:last-child { border:none; }
-.detail-med-info { flex:1; }
-.detail-med-name { font-size:14px; font-weight:600; }
-.detail-med-time { font-size:11px; color:var(--text-light); }
-.detail-check-btn {
-  width:38px; height:38px; border-radius:50%; border:none;
-  font-size:18px; cursor:pointer; transition:all .25s;
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0;
-}
-.detail-check-btn.off { background:#f0f0f0; color:#ccc; }
-.detail-check-btn.on { background:var(--success); color:white; }
-.detail-check-btn.late { background:var(--warning); color:white; }
+/* 日历表格 - 用table保证兼容性 */
+.cal-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.cal-table th{font-size:11px;color:#888;padding:5px 0;font-weight:600}
+.cal-table th.we{color:#e74c3c}
+.cal-table td{text-align:center;padding:4px 0;position:relative}
+.cal-cell{display:block;width:36px;height:36px;line-height:36px;margin:0 auto;border-radius:50%;font-size:14px;cursor:pointer;color:#333;position:relative}
+.cal-cell.gray{color:#ccc}
+.cal-cell.today{font-weight:800;color:#667eea}
+.cal-cell.sel{background:#667eea;color:#fff}
+.cal-dot{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.dot-ok{width:5px;height:5px;border-radius:50%;background:#27ae60}
+.dot-py{width:5px;height:5px;border-radius:50%;background:#e67e22}
 
-/* 统计卡 */
-.stats-row {
-  display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px;
-}
-.stat-item {
-  background:var(--card-bg); border-radius:14px; padding:12px 8px;
-  text-align:center; box-shadow:0 4px 16px rgba(0,0,0,.1);
-}
-.stat-num { font-size:24px; font-weight:800; color:var(--primary); }
-.stat-label { font-size:11px; color:var(--text-light); margin-top:2px; }
+/* 日期详情 */
+.detail{background:rgba(255,255,255,.95);border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.d-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.d-title{font-size:14px;font-weight:700}
+.d-st{font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600}
+.d-st-ok{background:#e8f5e9;color:#2e7d32}
+.d-st-py{background:#fff3e0;color:#e65100}
+.d-st-no{background:#fce4ec;color:#c62828}
+.d-st-ep{background:#f5f5f5;color:#999}
+
+.d-item{display:flex;align-items:center;padding:7px 2px;border-bottom:1px solid #fafafa}
+.d-item:last-child{border:none}
+.d-info{flex:1}
+.d-name{font-size:13px;font-weight:600}
+.d-time{font-size:10px;color:#888}
+.d-btn{width:36px;height:36px;border-radius:50%;border:none;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.d-btn-no{background:#f0f0f0;color:#ccc}
+.d-btn-yes{background:#27ae60;color:#fff}
+.d-btn:active{transform:scale(.88)}
 
 /* 安装提示 */
-.install-banner {
-  background:rgba(255,255,255,.95); border-radius:14px; padding:12px 14px;
-  margin-bottom:12px; display:flex; align-items:center; gap:10px;
-  box-shadow:0 4px 16px rgba(0,0,0,.1);
-}
-.install-banner .ib-icon { font-size:28px; }
-.install-banner .ib-text { flex:1; }
-.install-banner .ib-title { font-size:13px; font-weight:600; }
-.install-banner .ib-desc { font-size:10px; color:var(--text-light); margin-top:2px; }
-.install-banner .ib-btn {
-  background:var(--primary); color:white; border:none; padding:7px 14px;
-  border-radius:10px; font-size:12px; font-weight:600; cursor:pointer;
-  white-space:nowrap;
-}
+.install{background:rgba(255,255,255,.95);border-radius:12px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.install .i-ico{font-size:24px}
+.install .i-txt{flex:1}
+.install .i-tit{font-size:13px;font-weight:600}
+.install .i-desc{font-size:10px;color:#888;margin-top:1px}
+.install .i-go{background:#667eea;color:#fff;border:none;padding:6px 14px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
 
-/* 完成庆祝 */
-.celebrate-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.45);
-  display:flex; align-items:center; justify-content:center; z-index:100;
-  opacity:0; pointer-events:none; transition:opacity .3s;
-}
-.celebrate-overlay.show { opacity:1; pointer-events:auto; }
-.celebrate-card {
-  background:white; border-radius:24px; padding:32px 36px; text-align:center;
-  transform:scale(.8); transition:transform .35s cubic-bezier(.175,.885,.32,1.275);
-}
-.celebrate-overlay.show .celebrate-card { transform:scale(1); }
-.celebrate-emoji { font-size:48px; margin-bottom:10px; }
-.celebrate-text { font-size:18px; font-weight:700; color:var(--text); }
-.celebrate-sub { font-size:13px; color:var(--text-light); margin-top:6px; }
+/* 庆祝弹窗 */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.show{opacity:1;pointer-events:auto}
+.ov-card{background:#fff;border-radius:20px;padding:28px 32px;text-align:center;transform:scale(.8);transition:transform .35s}
+.overlay.show .ov-card{transform:scale(1)}
+.ov-emo{font-size:44px;margin-bottom:8px}
+.ov-txt{font-size:18px;font-weight:700}
+.ov-sub{font-size:13px;color:#888;margin-top:4px}
 
 /* Toast */
-.toast {
-  position:fixed; top:60px; left:50%; transform:translateX(-50%) translateY(-20px);
-  background:rgba(0,0,0,.78); color:white; padding:10px 24px;
-  border-radius:14px; font-size:14px; z-index:200;
-  opacity:0; transition:all .3s ease; white-space:nowrap;
-}
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast{position:fixed;top:55px;left:50%;transform:translateX(-50%) translateY(-15px);background:rgba(0,0,0,.78);color:#fff;padding:10px 22px;border-radius:12px;font-size:14px;z-index:200;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.safe-bottom { height:env(safe-area-inset-bottom); }
-
-@media (max-width:380px) {
-  .clock-time { font-size:36px; }
-  .countdown-num { font-size:24px; }
-  .header h1 { font-size:20px; }
-  .stat-num { font-size:20px; }
-}
+.safe{height:20px}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1>💊 吃药提醒</h1>
-  </div>
+<div class="wrap">
 
-  <!-- Tab 切换 -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('today')">📋 今日</button>
-    <button class="tab-btn" onclick="switchTab('calendar')">📅 日历</button>
-  </div>
+<div class="title">💊 吃药提醒</div>
 
-  <!-- ========== 今日页 ========== -->
-  <div class="page active" id="pageToday">
-
-    <!-- 安装提示 -->
-    <div class="install-banner" id="installBanner">
-      <span class="ib-icon">📲</span>
-      <div class="ib-text">
-        <div class="ib-title">添加到主屏幕（像App一样用）</div>
-        <div class="ib-desc" id="installDesc">正在检测安装方式...</div>
-      </div>
-      <button class="ib-btn" id="installBtn">安装</button>
-    </div>
-
-    <!-- 主状态 -->
-    <div class="main-card">
-      <div class="clock-date" id="dateLabel"></div>
-      <div class="clock-time" id="clockTime"></div>
-      <div class="status-badge" id="statusBadge"></div>
-    </div>
-
-    <!-- 倒计时 -->
-    <div class="countdown-card">
-      <span class="countdown-label">⏰ 下次提醒</span>
-      <span class="countdown-num" id="countdownNum">--:--:--</span>
-    </div>
-
-    <!-- 🌅 早上药 -->
-    <div class="med-section">
-      <div class="section-header">
-        <span class="emoji">🌅</span>
-        <span class="title">早上服药</span>
-        <span class="time-hint">9:00 前</span>
-      </div>
-      <div class="med-row">
-        <div class="med-left">
-          <div class="med-name">艾司西酞普兰</div>
-          <div class="med-dose">10 mg · 每日一次</div>
-        </div>
-        <button class="check-btn off" id="btn_m_esc" onclick="doCheck('m','escitalopram')">○</button>
-      </div>
-    </div>
-
-    <!-- 🌙 晚上药 -->
-    <div class="med-section">
-      <div class="section-header">
-        <span class="emoji">🌙</span>
-        <span class="title">晚上服药</span>
-        <span class="time-hint">22:00 前</span>
-      </div>
-      <div class="med-row">
-        <div class="med-left">
-          <div class="med-name">奥氮平</div>
-          <div class="med-dose">2.5 mg 起（每3天+2.5mg → 最高10mg）</div>
-        </div>
-        <button class="check-btn off" id="btn_e_ola" onclick="doCheck('e','olanzapine')">○</button>
-      </div>
-      <div class="med-row">
-        <div class="med-left">
-          <div class="med-name">米氮平</div>
-          <div class="med-dose">15 mg（1周后可加到30mg）</div>
-        </div>
-        <button class="check-btn off" id="btn_e_mir" onclick="doCheck('e','mirtazapine')">○</button>
-      </div>
-    </div>
-
-    <!-- 进度 -->
-    <div class="progress-wrap">
-      <div class="progress-info">
-        <span>今日进度</span>
-        <span id="progressText">0 / 3</span>
-      </div>
-      <div class="progress-track"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
-    </div>
-  </div>
-
-  <!-- ========== 日历页 ========== -->
-  <div class="page" id="pageCalendar">
-
-    <!-- 本月统计 -->
-    <div class="stats-row">
-      <div class="stat-item">
-        <div class="stat-num" id="statFull">0</div>
-        <div class="stat-label">✅ 全部完成</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="statPartial">0</div>
-        <div class="stat-label">⚠️ 部分完成</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="statMissed">0</div>
-        <div class="stat-label">❌ 未服药</div>
-      </div>
-    </div>
-
-    <!-- 日历 -->
-    <div class="cal-card">
-      <div class="cal-nav">
-        <button onclick="calMove(-1)">◀</button>
-        <div class="cal-month-label" id="calMonthLabel"></div>
-        <button onclick="calMove(1)">▶</button>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
-
-    <!-- 选中日期详情 & 补卡 -->
-    <div class="date-detail" id="dateDetail">
-      <div class="detail-header">
-        <div class="detail-title" id="detailTitle">选择一个日期查看/补卡</div>
-        <div class="detail-status empty" id="detailStatus"></div>
-      </div>
-      <div id="detailBody"></div>
-    </div>
-  </div>
-
-  <div class="safe-bottom"></div>
+<!-- TAB -->
+<div class="tabs">
+  <button class="tab on" id="tabToday" onclick="goTab('today')">📋 今日</button>
+  <button class="tab" id="tabCal" onclick="goTab('cal')">📅 日历</button>
 </div>
 
-<!-- 庆祝弹窗 -->
-<div class="celebrate-overlay" id="celebrateOverlay" onclick="this.classList.remove('show')">
-  <div class="celebrate-card">
-    <div class="celebrate-emoji" id="celeEmoji">🎉</div>
-    <div class="celebrate-text" id="celeText">太棒了！</div>
-    <div class="celebrate-sub" id="celeSub">今天的药都吃完了~</div>
+<!-- ========== 今日页 ========== -->
+<div class="pane show" id="paneToday">
+
+  <!-- 安装提示 -->
+  <div class="install" id="installBox">
+    <div class="i-ico">📲</div>
+    <div class="i-txt">
+      <div class="i-tit">添加到主屏幕</div>
+      <div class="i-desc" id="installDesc">正在检测...</div>
+    </div>
+    <button class="i-go" id="installBtn">安装</button>
+  </div>
+
+  <!-- 时钟 -->
+  <div class="card clock-c">
+    <div class="clock-d" id="clkDate"></div>
+    <div class="clock-t" id="clkTime"></div>
+    <div class="badge am" id="clkBadge"></div>
+  </div>
+
+  <!-- 倒计时 -->
+  <div class="card">
+    <div class="cd-row">
+      <span class="cd-lbl">⏰ 下次提醒</span>
+      <span class="cd-num" id="cdNum">--:--:--</span>
+    </div>
+  </div>
+
+  <!-- 早上药 -->
+  <div class="card">
+    <div class="sec-title"><span class="emo">🌅</span><span class="name">早上服药</span><span class="hint">9:00 前</span></div>
+    <div class="med-item">
+      <div class="med-info"><div class="med-n">艾司西酞普兰</div><div class="med-d">10 mg · 每日一次</div></div>
+      <button class="btn btn-no" id="b_m_esc" onclick="chk('m','escitalopram')">○</button>
+    </div>
+  </div>
+
+  <!-- 晚上药 -->
+  <div class="card">
+    <div class="sec-title"><span class="emo">🌙</span><span class="name">晚上服药</span><span class="hint">22:00 前</span></div>
+    <div class="med-item">
+      <div class="med-info"><div class="med-n">奥氮平</div><div class="med-d">2.5 mg 起（每3天+2.5mg → 最高10mg）</div></div>
+      <button class="btn btn-no" id="b_e_ola" onclick="chk('e','olanzapine')">○</button>
+    </div>
+    <div class="med-item">
+      <div class="med-info"><div class="med-n">米氮平</div><div class="med-d">15 mg（1周后可加到30mg）</div></div>
+      <button class="btn btn-no" id="b_e_mir" onclick="chk('e','mirtazapine')">○</button>
+    </div>
+  </div>
+
+  <!-- 进度 -->
+  <div class="prog">
+    <div class="prog-info"><span>今日进度</span><span id="progTxt">0 / 3</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="progBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ========== 日历页 ========== -->
+<div class="pane" id="paneCal">
+
+  <!-- 统计 -->
+  <div class="stats">
+    <div class="st"><div class="st-n" id="stOk">0</div><div class="st-l">✅ 全部完成</div></div>
+    <div class="st"><div class="st-n" id="stPy">0</div><div class="st-l">⚠️ 部分完成</div></div>
+    <div class="st"><div class="st-n" id="stNo">0</div><div class="st-l">❌ 未服药</div></div>
+  </div>
+
+  <!-- 日历 -->
+  <div class="card">
+    <div class="cal-nav">
+      <button onclick="calGo(-1)">◀</button>
+      <div class="cal-title" id="calTitle"></div>
+      <button onclick="calGo(1)">▶</button>
+    </div>
+    <table class="cal-table">
+      <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th class="we">六</th><th class="we">日</th></tr></thead>
+      <tbody id="calBody"></tbody>
+    </table>
+  </div>
+
+  <!-- 详情 & 补卡 -->
+  <div class="detail" id="detailBox">
+    <div class="d-head">
+      <div class="d-title" id="dTt">点选日期查看 / 补卡</div>
+      <div class="d-st d-st-ep" id="dSt"></div>
+    </div>
+    <div id="dBd"></div>
+  </div>
+
+</div>
+
+<div class="safe"></div>
+</div>
+
+<!-- 庆祝 -->
+<div class="overlay" id="overlay" onclick="this.classList.remove('show')">
+  <div class="ov-card">
+    <div class="ov-emo" id="ovEmo">🎉</div>
+    <div class="ov-txt" id="ovTxt">太棒了！</div>
+    <div class="ov-sub" id="ovSub">今天的药都吃完了~</div>
   </div>
 </div>
 
@@ -429,369 +259,284 @@ html, body {
 <div class="toast" id="toast"></div>
 
 <script>
-// ========== 数据层 ==========
-const SKEY = 'med_v3';
-const MEDS = [
-  { group:'m', id:'escitalopram', name:'艾司西酞普兰', dose:'10 mg', timeHint:'早上 9:00 前' },
-  { group:'e', id:'olanzapine',     name:'奥氮平',       dose:'2.5 mg 起', timeHint:'晚上 22:00 前' },
-  { group:'e', id:'mirtazapine',    name:'米氮平',       dose:'15 mg', timeHint:'晚上 22:00 前' },
+// ==== 数据 ====
+var SK='med_v4';
+var MEDS=[
+  {g:'m',id:'escitalopram',nm:'艾司西酞普兰',ds:'10 mg',tm:'早上 9:00 前'},
+  {g:'e',id:'olanzapine',nm:'奥氮平',ds:'2.5 mg 起',tm:'晚上 22:00 前'},
+  {g:'e',id:'mirtazapine',nm:'米氮平',ds:'15 mg',tm:'晚上 22:00 前'}
 ];
+var WDS=['周日','周一','周二','周三','周四','周五','周六'];
 
-function load(){ try{ return JSON.parse(localStorage.getItem(SKEY))||{}; }catch(e){return{};} }
-function save(d){ localStorage.setItem(SKEY,JSON.stringify(d)); }
+function ld(){try{return JSON.parse(localStorage.getItem(SK))||{};}catch(e){return{};}}
+function sv(d){localStorage.setItem(SK,JSON.stringify(d));}
+function ds(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function tds(){return ds(new Date());}
+function mk(g,i){return g+'_'+i;}
+function pad(n){return n<10?'0'+n:''+n;}
 
-function dateStr(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function todayStr(){ return dateStr(new Date()); }
-function mkey(g,id){ return g+'_'+id; }
+function on(ds,g,i){var d=ld();return!!(d[ds]&&d[ds][mk(g,i)]);}
+function tog(ds,g,i){var d=ld();if(!d[ds])d[ds]={};d[ds][mk(g,i)]=!d[ds][mk(g,i)];sv(d);return d[ds][mk(g,i)];}
+function dayData(ds){return ld()[ds]||{};}
+function daySt(ds){var data=dayData(ds),n=0;for(var j=0;j<MEDS.length;j++){if(data[mk(MEDS[j].g,MEDS[j].id)])n++;}if(n===0)return'empty';if(n===MEDS.length)return'done';return'partial';}
 
-function isOn(dateStr,g,id){
-  const d=load(); return !!(d[dateStr]&&d[dateStr][mkey(g,id)]);
-}
-function flipOn(dateStr,g,id){
-  const d=load();
-  if(!d[dateStr]) d[dateStr]={};
-  d[dateStr][mkey(g,id)] = !(d[dateStr][mkey(g,id)]);
-  save(d);
-  return d[dateStr][mkey(g,id)];
-}
-function getDayData(ds){
-  const d=load(); return d[ds]||{};
-}
-function getDayStatus(ds){
-  const data=getDayData(ds);
-  let done=0, total=MEDS.length;
-  MEDS.forEach(m=>{ if(data[mkey(m.group,m.id)]) done++; });
-  if(done===0) return 'empty';
-  if(done===total) return 'done';
-  return 'partial';
+// ==== TAB ====
+function goTab(t){
+  document.getElementById('tabToday').className=t==='today'?'tab on':'tab';
+  document.getElementById('tabCal').className=t==='cal'?'tab on':'tab';
+  document.getElementById('paneToday').className=t==='today'?'pane show':'pane';
+  document.getElementById('paneCal').className=t==='cal'?'pane show':'pane';
+  if(t==='cal'){drawCal();drawStats();}
 }
 
-// ========== Tab 切换 ==========
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active', (tab==='today'&&i===0)||(tab==='calendar'&&i===1));
-  });
-  document.getElementById('pageToday').classList.toggle('active',tab==='today');
-  document.getElementById('pageCalendar').classList.toggle('active',tab==='calendar');
-  if(tab==='calendar'){ renderCalendar(); updateStats(); }
+// ==== 今日打卡 ====
+function setBtn(g,i,bid){
+  var btn=document.getElementById(bid);
+  var ok=on(tds(),g,i);
+  var now=new Date(),h=now.getHours();
+  var late=(g==='m'&&h>=12)||(g==='e'&&((h>=23)||(h<6)));
+  if(ok){btn.className='btn btn-yes';btn.textContent='✓';}
+  else if(late&&!ok){btn.className='btn btn-late';btn.textContent='!';}
+  else{btn.className='btn btn-no';btn.textContent='○';}
+}
+function refresh(){
+  setBtn('m','escitalopram','b_m_esc');
+  setBtn('e','olanzapine','b_e_ola');
+  setBtn('e','mirtazapine','b_e_mir');
+  updProg();
+}
+function chk(g,i){
+  var ok=tog(tds(),g,i);
+  if(g==='m')setBtn('m','escitalopram','b_m_esc');
+  else if(i==='olanzapine')setBtn('e','olanzapine','b_e_ola');
+  else setBtn('e','mirtazapine','b_e_mir');
+  updProg();
+  if(navigator.vibrate)vibrate([40,20,40]);
+  toast(ok?'✅ 已记录':'↩️ 已取消');
+  chkCele();
+}
+function updProg(){
+  var n=0;
+  for(var i=0;i<MEDS.length;i++){if(on(tds(),MEDS[i].g,MEDS[i].id))n++;}
+  document.getElementById('progBar').style.width=(n/MEDS.length*100)+'%';
+  document.getElementById('progTxt').textContent=n+' / '+MEDS.length;
 }
 
-// ========== 今日页 UI ==========
-function refreshBtn(g,id,btnId){
-  const btn=document.getElementById(btnId);
-  const on = isOn(todayStr(),g,id);
-  // 判断是否迟到
-  const now=new Date(), h=now.getHours(), m=now.getMinutes();
-  const isLate = (g==='m'&&h>=12) || (g==='e'&&h>=23||(h>=0&&h<6));
-  if(on){
-    btn.className='check-btn on'; btn.textContent='✓';
-  } else if(isLate && !on){
-    btn.className='check-btn late'; btn.textContent='！';
-  } else {
-    btn.className='check-btn off'; btn.textContent='○';
-  }
-}
-function refreshAll(){
-  refreshBtn('m','escitalopram','btn_m_esc');
-  refreshBtn('e','olanzapine','btn_e_ola');
-  refreshBtn('e','mirtazapine','btn_e_mir');
-  updateProgress();
-}
-
-function doCheck(g,id){
-  const on=flipOn(todayStr(),g,id);
-  if(g==='m') refreshBtn('m','escitalopram','btn_m_esc');
-  else if(id==='olanzapine') refreshBtn('e','olanzapine','btn_e_ola');
-  else refreshBtn('e','mirtazapine','btn_e_mir');
-  updateProgress();
-  if(on && navigator.vibrate) navigator.vibrate([40,20,40]);
-  showToast(on ? '✅ 已记录' : '↩️ 已取消');
-  checkCelebrate();
-}
-
-function updateProgress(){
-  let n=0;
-  MEDS.forEach(m=>{ if(isOn(todayStr(),m.group,m.id)) n++; });
-  document.getElementById('progressBar').style.width=(n/MEDS.length*100)+'%';
-  document.getElementById('progressText').textContent=n+' / '+MEDS.length;
-}
-
-// ========== 时钟 & 状态 ==========
-const WEEKDAYS=['周日','周一','周二','周三','周四','周五','周六'];
+// ==== 时钟 ====
 function tick(){
-  const now=new Date();
-  const h=now.getHours(), m=now.getMinutes(), s=now.getSeconds();
+  var now=new Date(),h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
+  document.getElementById('clkDate').textContent=(now.getMonth()+1)+'月'+now.getDate()+'日 '+WDS[now.getDay()];
+  document.getElementById('clkTime').textContent=pad(h)+':'+pad(m)+':'+pad(s);
 
-  document.getElementById('dateLabel').textContent =
-    now.getMonth()+1+'月'+now.getDate()+'日 '+WEEKDAYS[now.getDay()];
-  document.getElementById('clockTime').textContent =
-    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  var tot=h*60+m,badge=document.getElementById('clkBadge');
+  if(tot<540){badge.textContent='🌅 早上吃药时间';badge.className='badge am';}
+  else if(tot<1320){badge.textContent='☀️ 白天时段';badge.className='badge day';}
+  else{badge.textContent='🌙 晚上吃药时间';badge.className='badge pm';}
 
-  const total=h*60+m;
-  const badge=document.getElementById('statusBadge');
-  if(total<9*60){
-    badge.textContent='🌅 早上吃药时间'; badge.className='status-badge morning';
-  } else if(total<22*60){
-    badge.textContent='☀️ 白天时段'; badge.className='status-badge daytime';
-  } else {
-    badge.textContent='🌙 晚上吃药时间'; badge.className='status-badge evening';
-  }
-  countdown(h,m,s);
+  // 倒计时
+  var target=tot<540?9:(tot<1320?22:33),diff=target*60-tot;
+  if(diff<=0)diff+=1440;
+  var hh=Math.floor(diff/60),mm=diff%60,ss=(59-s)%60;
+  document.getElementById('cdNum').textContent=pad(hh)+':'+pad(mm)+':'+pad(ss);
 
-  // 更新迟到标记
-  refreshAll();
+  refresh();
 }
 
-function countdown(h,m,s){
-  const total=h*60+m;
-  let target;
-  if(total<9*60) target=9;
-  else if(total<22*60) target=22;
-  else target=33;
-
-  let diff=target*60-total;
-  if(diff<=0) diff+=24*60;
-
-  const hh=Math.floor(diff/60), mm=diff%60, ss=(59-s)%60;
-  document.getElementById('countdownNum').textContent=
-    String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0'));
+// ==== 庆祝 ====
+function chkCele(){
+  var all=true;
+  for(var i=0;i<MEDS.length;i++){if(!on(tds(),MEDS[i].g,MEDS[i].id)){all=false;break;}}
+  if(!all)return;
+  var now=new Date(),tot=now.getHours()*60+now.getMinutes();
+  if(tot>=540&&tot<1320&&on(tds(),'m','escitalopram'))cele('🌅','早上药吃完啦！','下午继续加油~');
+  else if(tot>=1320&&on(tds(),'e','olanzapine')&&on(tds(),'e','mirtazapine'))cele('🎉','今天全部完成！','好好休息，晚安💤');
+}
+function cele(e,t,s){
+  document.getElementById('ovEmo').textContent=e;
+  document.getElementById('ovTxt').textContent=t;
+  document.getElementById('ovSub').textContent=s;
+  var o=document.getElementById('overlay');o.classList.add('show');
+  setTimeout(function(){o.classList.remove('show');},3000);
 }
 
-// ========== 庆祝 ==========
-function checkCelebrate(){
-  const allDone=MEDS.every(m=>isOn(todayStr(),m.group,m.id));
-  if(!allDone) return;
-  const now=new Date(), total=now.getHours()*60+now.getMinutes();
-  const morningDone=isOn(todayStr(),'m','escitalopram');
-  const eveningDone=isOn(todayStr(),'e','olanzapine')&&isOn(todayStr(),'e','mirtazapine');
-
-  if(total>=9*60&&total<22*60&&morningDone){
-    showCelebrate('🌅','早上药吃完啦！','下午继续加油~');
-  } else if(total>=22*60&&eveningDone){
-    showCelebrate('🎉','今天全部完成！','好好休息，晚安💤');
-  }
-}
-function showCelebrate(emoji,text,sub){
-  document.getElementById('celeEmoji').textContent=emoji;
-  document.getElementById('celeText').textContent=text;
-  document.getElementById('celeSub').textContent=sub;
-  const o=document.getElementById('celebrateOverlay');
-  o.classList.add('show');
-  setTimeout(()=>o.classList.remove('show'),3000);
-}
-
-// ========== Toast ==========
-let toastTimer=null;
-function showToast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
+// ==== Toast ====
+var toastTimer=null;
+function toast(msg){
+  var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
+  toastTimer=setTimeout(function(){el.classList.remove('show');},1800);
 }
 
-// ========== 日历 ==========
-let calYear, calMonth, calSelectedDate=null;
+// ==== 日历 ====
+var cY=null,cM=null,cSel=null;
 
-function renderCalendar(){
-  if(calYear==null){
-    const t=new Date(); calYear=t.getFullYear(); calMonth=t.getMonth();
+function drawCal(){
+  if(cY===null){var t=new Date();cY=t.getFullYear();cM=t.getMonth();}
+  var fd=new Date(cY,cM,1),ld=new Date(cY,cM+1,0);
+  var sdow=(fd.getDay()+6)%7;// 周一=0
+  var todayT=tds();
+  var ms=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('calTitle').textContent=cY+'年 '+ms[cM];
+
+  var h='<tr>';
+  for(var i=0;i<7;i++){
+    var w=(i>=5)?' we':'';
+    h+='<th'+w+'>'+['一','二','三','四','五','六','日'][i]+'</th>';
   }
-  const firstDay=new Date(calYear,calMonth,1);
-  const lastDay=new Date(calYear,calMonth+1,0);
-  const startDow=(firstDay.getDay()+7)%7; // 周一开始=0
-  const todayT=todayStr();
-
-  const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('calMonthLabel').textContent=calYear+'年 '+months[calMonth];
-
-  const heads=['一','二','三','四','五','六','日'];
-  let html='<div class="cal-head">一</div><div class="cal-head">二</div><div class="cal-head">三</div>'+
-           '<div class="cal-head">四</div><div class="cal-head">五</div><div class="cal-head weekend">六</div><div class="cal-head weekend">日</div>';
+  h+='</tr>';
 
   // 上月填充
-  const prevLast=new Date(calYear,calMonth,0).getDate();
-  for(let i=startDow-1;i>=0;i--){
-    html+='<div class="cal-day other-month">'+(prevLast-i)+'</div>';
-  }
+  var pld=new Date(cY,cM,0).getDate();
+  var row=[];
+  for(var i=sdow-1;i>=0;i--)row.push('<td><span class="cal-cell gray">'+(pld-i)+'</span></td>');
 
   // 本月
-  for(let d=1;d<=lastDay.getDate();d++){
-    const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const isToday=ds===todayT;
-    const isSelected=ds===calSelectedDate;
-    const status=getDayStatus(ds);
+  for(var d=1;d<=ld.getDate();d++){
+    var dss=cY+'-'+pad(cM+1)+'-'+pad(d);
+    var isToday=dss===todayT,isSel=dss===cSel,st=daySt(dss);
+    var cls='cal-cell';
+    if(isToday)cls+=' today';
+    if(isSel)cls+=' sel';
 
-    let cls='cal-day';
-    if(isToday) cls+=' today';
-    if(isSelected) cls+=' selected';
+    var dotHtml='';
+    if(st==='done')dotHtml='<div class="cal-dot"><div class="dot-ok"></div><div class="dot-ok"></div></div>';
+    else if(st==='partial')dotHtml='<div class="cal-dot"><div class="dot-py"></div></div>';
 
-    // 圆点
-    let dotsHtml='';
-    if(status!=='empty'){
-      dotsHtml='<div class="dots">'+(status==='done'
-        ? '<div class="dot full"></div><div class="dot full"></div>'
-        : '<div class="dot partial"></div>')+'</div>';
-    }
-
-    html+='<div class="'+cls+'" onclick="selectDate(\''+ds+'\')">'+d+dotsHtml+'</div>';
+    row.push('<td><span class="'+cls+'" onclick="pickDate(\''+dss+'\')">'+d+dotHtml+'</span></td>');
+    if(row.length===7){h+='<tr>'+row.join('')+'</tr>';row=[];}
   }
+  // 填充末尾
+  if(row.length>0){for(var i=row.length;i<7;i++)row.push('<td><span class="cal-cell gray">'+(i-row.length+1)+'</span></td>');h+='<tr>'+row.join('')+'</tr>';}
 
-  // 下月填充
-  const totalCells=startDow+lastDay.getDate();
-  const remaining=(7-totalCells%7)%7;
-  for(let i=1;i<=remaining;i++) html+='<div class="cal-day other-month">'+i+'</div>';
-
-  document.getElementById('calGrid').innerHTML=html;
+  document.getElementById('calBody').innerHTML=h;
 }
 
-function calMove(dir){
-  calMonth+=dir;
-  if(calMonth>11){ calMonth=0; calYear++; }
-  if(calMonth<0){ calMonth=11; calYear--; }
-  renderCalendar();
+function calGo(dir){
+  cM+=dir;
+  if(cM>11){cM=0;cY++;}
+  if(cM<0){cM=11;cY--;}
+  drawCal();
 }
 
-function selectDate(ds){
-  calSelectedDate=ds;
-  renderCalendar();
-  renderDateDetail(ds);
+function pickDate(ds){
+  cSel=ds;
+  drawCal();
+  drawDetail(ds);
 }
 
-function renderDateDetail(ds){
-  const parts=ds.split('-');
-  const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
-  const wd=WEEKDAYS[d.getDay()];
-  const status=getDayStatus(ds);
+function drawDetail(ds){
+  var parts=ds.split('-');
+  var dd=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  var st=daySt(ds);
 
-  document.getElementById('detailTitle').textContent=
-    parseInt(parts[1])+'月'+parseInt(parts[2])+'日 '+wd;
+  document.getElementById('dTt').textContent=parseInt(parts[1])+'月'+parseInt(parts[2])+'日 '+WDS[dd.getDay()];
+  var se=document.getElementById('dSt');
+  se.className='d-st';
+  if(st==='done'){se.className+=' d-st-ok';se.textContent='✅ 全部完成';}
+  else if(st==='partial'){se.className+=' d-st-py';se.textContent='⚠️ 部分完成';}
+  else{se.className+=' d-st-ep';se.textContent='— 无记录';}
 
-  const statusEl=document.getElementById('detailStatus');
-  statusEl.className='detail-status '+status;
-  const statusText={done:'✅ 全部完成',partial:'⚠️ 部分完成',missed:'❌ 未服药',empty:'— 无记录'};
-  statusEl.textContent=statusText[status];
-
-  // 药品列表 + 补卡按钮
-  let bodyHtml='';
-  MEDS.forEach(m=>{
-    const on=isOn(ds,m.group,m.id);
-    const isPast=ds<todayStr();
-    const cls=on?'on':'off';
-
-    bodyHtml+='<div class="detail-med-row">'+
-      '<div class="detail-med-info">'+
-        '<div class="detail-med-name">'+(m.group==='m'?'🌅':'🌙')+' '+m.name+'</div>'+
-        '<div class="detail-med-time">'+m.timeHint+' · '+m.dose+'</div>'+
-      '</div>'+
-      '<button class="detail-check-btn '+cls+'" onclick="doCheckDate(\''+ds+'\''+\',\''+m.group+'\',\''+m.id+'\')">'+
-        (on?'✓':'○')+
-      '</button>'+
+  var bh='';
+  for(var i=0;i<MEDS.length;i++){
+    var m=MEDS[i],ok=on(ds,m.g,m.id),cls=ok?'d-btn-yes':'d-btn-no';
+    bh+='<div class="d-item">'+
+      '<div class="d-info"><div class="d-name">'+(m.g==='m'?'🌅':'🌙')+' '+m.nm+'</div><div class="d-time">'+m.tm+' · '+m.ds+'</div></div>'+
+      '<button class="d-btn '+cls+'" onclick="chkDate(\''+ds+'\',\''+m.g+'\',\''+m.id+'\')">'+(ok?'✓':'○')+'</button>'+
     '</div>';
-  });
-
-  document.getElementById('detailBody').innerHTML=bodyHtml;
-}
-
-function doCheckDate(ds,g,id){
-  const on=flipOn(ds,g,id);
-  renderDateDetail(ds);
-  renderCalendar();
-  updateStats();
-  showToast(on ? '✅ '+ds+' 已补卡' : '↩️ 已取消');
-  // 如果是今天，同步更新今日页
-  if(ds===todayStr()) refreshAll();
-}
-
-// ========== 统计 ==========
-function updateStats(){
-  let fullCount=0, partialCount=0, missedCount=0;
-  // 遍历本月
-  const lastDay=new Date(calYear,calMonth+1,0).getDate();
-  const todayT=new Date();
-  for(let d=1;d<=lastDay;d++){
-    const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    // 只统计今天及之前的日期
-    if(ds>todayStr()) continue;
-    const st=getDayStatus(ds);
-    if(st==='done') fullCount++;
-    else if(st==='partial') partialCount++;
-    else if(st==='empty') missedCount++;
   }
-  document.getElementById('statFull').textContent=fullCount;
-  document.getElementById('statPartial').textContent=partialCount;
-  document.getElementById('statMissed').textContent=missedCount;
+  document.getElementById('dBd').innerHTML=bh;
 }
 
-// ========== 通知 ==========
+function chkDate(ds,g,i){
+  var ok=tog(ds,g,i);
+  drawDetail(ds);
+  drawCal();
+  drawStats();
+  toast(ok?'✅ 补卡成功':'↩️ 已取消');
+  if(ds===tds())refresh();
+}
+
+// ==== 统计 ====
+function drawStats(){
+  var ok=0,py=0,no=0;
+  var lastD=new Date(cY,cM+1,0).getDate();
+  for(var d=1;d<=lastD;d++){
+    var dss=cY+'-'+pad(cM+1)+'-'+pad(d);
+    if(dss>tds())continue;
+    var s=daySt(dss);
+    if(s==='done')ok++;
+    else if(s==='partial')py++;
+    else no++;
+  }
+  document.getElementById('stOk').textContent=ok;
+  document.getElementById('stPy').textContent=py;
+  document.getElementById('stNo').textContent=no;
+}
+
+// ==== 通知 ====
 function setupNotif(){
-  if(!('Notification'in window)) return;
-  if(Notification.permission==='default') Notification.requestPermission();
-  if(Notification.permission!=='granted') return;
-
-  function fire(title,body){
-    const n=new Notification(title,{body,icon:'icon-192.png',badge:'icon-192.png',
-      vibrate:[200,100,200],tag:'med'});
-    setTimeout(()=>n.close(),8000);
-  }
-  function sched(targetH,title,body){
-    let t=new Date(); t.setHours(targetH,0,0,0);
-    if(t<=new Date()) t.setDate(t.getDate()+1);
-    setTimeout(()=>fire(title,body),t-new Date());
-  }
-  sched(9,'💊 该吃早上的药了！','艾司西酞普兰 10mg');
-  sched(22,'💊 该吃晚上的药了！','奥氮平 + 米氮平');
+  if(!('Notification'in window))return;
+  if(Notification.permission==='default')Notification.requestPermission();
+  if(Notification.permission!=='granted')return;
+  function fire(t,b){var n=new Notification(t,{body:b,icon:'icon-192.png',tag:'med'});setTimeout(function(){n.close();},8000);}
+  function sch(th,t,b){var x=new Date();x.setHours(th,0,0,0);if(x<=new Date())x.setDate(x.getDate()+1);setTimeout(function(){fire(t,b);},x-new Date());}
+  sch(9,'💊 该吃早上的药了！','艾司西酞普兰 10mg');
+  sch(22,'💊 该吃晚上的药了！','奥氮平 + 米氮平');
 }
 
-// ========== PWA 安装 ==========
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',(e)=>{
+// ==== 安装 ====
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
   e.preventDefault();
   deferredPrompt=e;
-  document.getElementById('installDesc').textContent='点击右侧「安装」按钮即可';
+  document.getElementById('installDesc').textContent='点右侧「安装」按钮即可';
 });
-document.getElementById('installBtn').addEventListener('click',async()=>{
+document.getElementById('installBtn').addEventListener('click',function(){
   if(deferredPrompt){
     deferredPrompt.prompt();
-    const r=await deferredPrompt.userChoice;
-    deferredPrompt=null;
-    document.getElementById('installBanner').style.display='none';
-    if(r.outcome==='accepted') showToast('🎉 已添加到主屏幕！');
+    deferredPrompt.userChoice.then(function(r){
+      deferredPrompt=null;
+      document.getElementById('installBox').style.display='none';
+      if(r.outcome==='accepted')toast('🎉 已添加到主屏幕！');
+    });
     return;
   }
-  showInstallGuide();
+  var ua=navigator.userAgent.toLowerCase();
+  var g='';
+  if(ua.indexOf('oppo')>-1||ua.indexOf('heytap')>-1)
+    g='①浏览器菜单→②找"添加到桌面"→③找不到请用Chrome打开';
+  else if(ua.indexOf('chrome')>-1)
+    g='①右上角⋮→②添加到主屏幕→③确认';
+  else if(ua.indexOf('safari')>-1)
+    g='①分享📤→②添加到主屏幕→③确认';
+  else
+    g='①浏览器菜单→②找"添加到桌面"';
+  document.getElementById('installDesc').textContent=g;
+  toast('👇 看下方操作步骤');
 });
 
-function showInstallGuide(){
-  const ua=navigator.userAgent.toLowerCase();
-  let guide='';
-  if(ua.includes('oppo')||ua.includes('heytap'))
-    guide='①浏览器菜单→②找"添加到桌面"→③找不到请用Chrome打开本页';
-  else if(ua.includes('chrome'))
-    guide='①右上角⋮→②添加到主屏幕→③确认';
-  else if(ua.includes('safari'))
-    guide='①分享📤→②添加到主屏幕→③确认';
-  else
-    guide='①浏览器菜单→②找"添加到桌面"→③推荐用Chrome';
-  document.getElementById('installDesc').textContent=guide;
-  showToast('👇 看下方操作步骤');
-}
+// ==== Service Worker ====
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 
-// ========== Service Worker ==========
-if('serviceWorker'in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-
-// ========== 启动 ==========
-refreshAll();
+// ==== 启动 ====
+refresh();
 tick();
 setInterval(tick,1000);
 setupNotif();
+cSel=tds();
 
-// 默认选中今天
-calSelectedDate=todayStr();
-
-setTimeout(()=>{
-  if(!deferredPrompt) showInstallGuide();
+setTimeout(function(){
+  if(!deferredPrompt){
+    var ua=navigator.userAgent.toLowerCase();
+    var g='';
+    if(ua.indexOf('oppo')>-1||ua.indexOf('heytap')>-1)
+      g='①浏览器菜单→②找"添加到桌面"→③找不到请用Chrome打开';
+    else if(ua.indexOf('chrome')>-1)
+      g='①右上角⋮→②添加到主屏幕→③确认';
+    else
+      g='①浏览器菜单→②找"添加到桌面"';
+    document.getElementById('installDesc').textContent=g;
+  }
 },2000);
 </script>
 </body>
